@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<users>
+  <user gender="M" type="Admin">
+    <name>Mariano Achaval</name>
+    <phone>152235465654</phone>
+    <street>Laprida 924</street>
+    <country>US</country>
+  </user>
+  <user gender="F" type="Consultant">
+    <name>Martin Alejandro Cousido</name>
+    <phone>15332255555</phone>
+    <street>Acassuso 2280</street>
+    <country>Canada</country>
+  </user>
+  <user gender="M" type="Assistant">
+    <name>Rohit Sharma</name>
+    <phone>2224441</phone>
+    <street>Acassuso 2280</street>
+    <country>US</country>
+  </user>
+</users>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <flow name="simple-json-to-xml-flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/simple-json-to-xml" doc:name="HTTP Request"/>
+        <dw:transform-message metadata:id="12a2e08c-5d07-4345-af46-d113b3fa45f9" doc:name="Simple JSON to XML Transformation">
+            <dw:input-payload doc:sample="json.json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+---
+{
+	"Order": {
+		"type": "Book",
+		"title": payload.title,
+		"year": "By $(payload.author) on $(payload.year)"
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <set-payload doc:name="Set Empty Payload"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="18c0cc5e-6c93-438e-8564-5d797e28a2b8">
+            <dw:input-payload doc:sample="users_2.xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%function words(name) name splitBy " "
+%var constVariable='Constant Data'
+---
+{contactsWithScopedVars: payload.users.*user map using (parts = words($.name)){
+	"firstName" : parts[0],
+	("lastName" : parts[1]) when (sizeOf parts) > 1,
+	"secondLastName": parts[-1],
+	"phone": $.phone
+},
+groupByCountry: payload.users.*user groupBy $.country pluck {
+	"country": $$,
+	"name": $.name
+},
+payloadAsJson: {
+	"tojson": payload
+},
+arrayData: {
+	"arrayOfValues": ["one", "two", "three"],
+	"constant": constVariable
+},
+indexedSelector: {
+	"user": payload.users[1],
+	"indexOnString": "Testing"[2]
+},
+rangeSelector: {
+	slice: [0,1,2][0..1],
+  	lastToFirst: [0,1,2,3,4,5,6,7][-3..1],
+  	lastToEnd: [0,1,2,3,4,5,6,7][-3..-1]
+},
+attributeSelector: {
+	userType: payload.users[0].@type,
+	gender: payload.users[0].@gender,
+	allAttributes: payload.users[0].@
+},
+asObject: {
+	obj: payload.users[2] as :object
+},
+keyPresent: {
+	namePresent: payload.users[0].name?,
+	agePresent: payload.users[0].age
+},
+validationOperation: {
+	namePresent: payload.users.*user.name[?($ == 'Mariano Achaval')]
+}
+
+}]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+</mule>
